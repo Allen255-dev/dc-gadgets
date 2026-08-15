@@ -1,0 +1,81 @@
+{% extends "scheduler/base.html" %}
+{% load humanize %}
+
+{% block title %}Tech Store & Electronics Showcase &middot; DC Gadgets{% endblock %}
+
+{% block content %}
+<div class="section-header" style="align-items: center;">
+    <div>
+        <h1 class="section-title">DC Gadgets Store Showcase</h1>
+        <p class="section-subtitle">Browse certified smartphones, laptops, gaming handhelds, audio gear, and accessories.</p>
+    </div>
+</div>
+
+<!-- Filters & Search Bar -->
+<div class="calculator-box" style="padding: 20px; margin-bottom: 32px;">
+    <form method="get" style="display: flex; gap: 14px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 240px;">
+            <input type="text" name="q" value="{{ search_query|default:'' }}" class="input-field" placeholder="Search gadgets (e.g. iPhone, MacBook M2, PS5)...">
+        </div>
+        <div style="width: 180px;">
+            <select name="category" class="input-field" onchange="this.form.submit()">
+                <option value="">All Categories</option>
+                {% for code, name in categories %}
+                <option value="{{ code }}" {% if selected_category == code %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div style="width: 160px;">
+            <select name="brand" class="input-field" onchange="this.form.submit()">
+                <option value="">All Brands</option>
+                {% for brand in brands %}
+                <option value="{{ brand }}" {% if selected_brand == brand %}selected{% endif %}>{{ brand }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-secondary">Filter</button>
+        {% if selected_category or selected_brand or search_query %}
+        <a href="{% url 'store_catalog' %}" class="btn btn-outline">Clear Filters</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Product Showcase Grid -->
+<div class="grid">
+    {% for gadget in gadgets %}
+    <div class="card gadget-card">
+        <div class="gadget-img-wrapper">
+            <img src="{{ gadget.image_url }}" alt="{{ gadget.name }}" class="gadget-img" onerror="this.src='https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&auto=format&fit=crop&q=80'">
+            {% if gadget.badge %}
+            <span class="card-badge badge-popular">{{ gadget.badge }}</span>
+            {% endif %}
+        </div>
+        <div class="gadget-body">
+            <div class="gadget-brand">{{ gadget.brand }}</div>
+            <h3 class="card-title" style="font-size: 17px; margin: 4px 0;">{{ gadget.name }}</h3>
+            <div class="stars">★★★★★ {{ gadget.rating }}</div>
+            <p class="card-desc" style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">{{ gadget.specs }}</p>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">{{ gadget.description }}</p>
+
+            <div class="card-meta" style="margin-top: auto;">
+                <div>
+                    <div class="card-price">₦{{ gadget.price|floatformat:0|intcomma }}</div>
+                    {% if gadget.original_price %}
+                    <span style="font-size: 12px; color: var(--text-muted); text-decoration: line-through;">₦{{ gadget.original_price|floatformat:0|intcomma }}</span>
+                    {% endif %}
+                </div>
+                <a href="{% url 'book_appointment' %}" class="btn btn-primary btn-sm">
+                    Inquire / Reserve
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 48px; background: var(--bg-surface); border-radius: var(--radius-lg);">
+        <i data-lucide="package-x" style="width: 48px; height: 48px; color: var(--text-muted); margin-bottom: 12px;"></i>
+        <h3>No gadgets match your selection</h3>
+        <p style="color: var(--text-secondary);">Try clearing your search query or choosing another brand.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

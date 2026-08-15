@@ -1,0 +1,347 @@
+{% extends "scheduler/base.html" %}
+{% load humanize %}
+
+{% block title %}DC Gadgets &middot; Express Tech Repair & Custom Electronics Store{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="chip chip-active" style="margin-bottom: 20px;">
+            <i data-lucide="zap"></i> Walk-ins welcome, or book ahead online
+        </div>
+        <h1>
+            We Buy, Sell, Swap &amp; <span class="gradient-text">Fix Your Gadgets</span>
+        </h1>
+        <p class="hero-subtitle">
+            Screen cracked? Battery dying? Looking to upgrade your phone or laptop? Book a slot with our technicians at Computer Village, Ikeja — no more waiting around the shop.
+        </p>
+
+        <div class="hero-cta">
+            <a href="{% url 'book_appointment' %}" class="btn btn-primary btn-lg">
+                <i data-lucide="calendar"></i> Schedule Repair Appointment
+            </a>
+            <a href="{% url 'store_catalog' %}" class="btn btn-secondary btn-lg">
+                <i data-lucide="shopping-bag"></i> Browse Gadget Store
+            </a>
+        </div>
+
+        <div class="hero-stats">
+            <div class="stat-item">
+                <div class="stat-num">{{ total_repairs_count }}+</div>
+                <div class="stat-label">Repairs Completed</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">4.9 ★</div>
+                <div class="stat-label">Customer Rating</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-num">90 Days</div>
+                <div class="stat-label">Warranty Guarantee</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-visual">
+        <div class="hero-card-preview">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <span class="chip chip-active"><i data-lucide="activity"></i> Live Store Status</span>
+                <span style="font-size: 12px; color: var(--emerald); font-weight: 700;">● Technicians On Duty</span>
+            </div>
+
+            <div class="device-badge-row">
+                <span class="chip"><i data-lucide="smartphone"></i> iPhone &amp; Galaxy</span>
+                <span class="chip"><i data-lucide="laptop"></i> MacBook &amp; Dell</span>
+                <span class="chip"><i data-lucide="gamepad-2"></i> PS5 &amp; Xbox</span>
+                <span class="chip"><i data-lucide="cpu"></i> Custom PC</span>
+            </div>
+
+            <div style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; margin-top: 16px;">
+                <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 8px;">
+                    <span>Next Available Slot</span>
+                    <span style="color: var(--secondary);">Today at 2:30 PM</span>
+                </div>
+                <p style="font-size: 13px; color: var(--text-secondary);">
+                    Book online now for complimentary diagnostics and priority queue handling.
+                </p>
+                <a href="{% url 'book_appointment' %}" class="btn btn-primary btn-sm" style="width: 100%; margin-top: 12px;">
+                    Reserve Priority Slot
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Repair Status Tracker Bar -->
+<div class="track-bar">
+    <div class="track-bar-text">
+        <div class="brand-icon" style="width: 32px; height: 32px; font-size: 16px;"><i data-lucide="search"></i></div>
+        <div>
+            <div>Have a device in repair?</div>
+            <div style="font-size: 12px; color: var(--text-muted); font-weight: 400;">Track real-time progress using your DC code (e.g. DC-8F92A)</div>
+        </div>
+    </div>
+    <form action="{% url 'track_repair' %}" method="get" class="track-form">
+        <input type="text" name="code" class="input-field" placeholder="Enter Tracking Code or Phone Number..." required>
+        <button type="submit" class="btn btn-secondary">Track</button>
+    </form>
+</div>
+
+<!-- Popular Services Section -->
+<section class="section">
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">Featured Services</h2>
+            <p class="section-subtitle">Transparent pricing, certified components, and express turnaround times.</p>
+        </div>
+        <a href="{% url 'services_catalog' %}" class="btn btn-outline">
+            View All Services <i data-lucide="arrow-right"></i>
+        </a>
+    </div>
+
+    <div class="grid">
+        {% for service in popular_services %}
+        <div class="card">
+            <span class="card-badge badge-popular">Popular</span>
+            <div class="card-icon">
+                <i data-lucide="{% if service.category == 'REPAIR' %}wrench{% elif service.category == 'UPGRADE' %}cpu{% elif service.category == 'DIAGNOSTICS' %}activity{% else %}headphones{% endif %}"></i>
+            </div>
+            <h3 class="card-title">{{ service.name }}</h3>
+            <p class="card-desc">{{ service.description }}</p>
+            
+            <div style="margin-bottom: 16px;">
+                <span class="chip"><i data-lucide="clock"></i> {{ service.duration_minutes }} min</span>
+                <span class="chip"><i data-lucide="shield-check"></i> {{ service.warranty_info }}</span>
+            </div>
+
+            <div class="card-meta">
+                <div class="card-price">₦{{ service.price|floatformat:0|intcomma }}</div>
+                <a href="{% url 'book_appointment' %}?service_id={{ service.id }}" class="btn btn-primary btn-sm">
+                    Book Service
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <p style="color: var(--text-muted);">No featured services found.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Repair Cost Estimator Calculator -->
+<section class="section">
+    <div class="calculator-box">
+        <div style="text-align: center; max-width: 600px; margin: 0 auto 32px auto;">
+            <div class="chip chip-active" style="margin-bottom: 12px;"><i data-lucide="calculator"></i> Instant Estimator</div>
+            <h2 class="section-title">Instant Repair Quote Calculator</h2>
+            <p class="section-subtitle">Select your device type to see estimated repair duration and price guidance.</p>
+        </div>
+
+        <div class="calc-grid">
+            <div class="calc-option selected" onclick="updateEstimate('iPhone / Smartphone', '₦45,000', '45 min', 'OLED Screen & Battery Replacement')">
+                <i data-lucide="smartphone" style="font-size: 28px; color: var(--primary);"></i>
+                <div class="calc-option-title">Smartphone</div>
+                <div style="font-size: 12px; color: var(--text-muted);">iPhone, Samsung Galaxy, Pixel</div>
+            </div>
+            <div class="calc-option" onclick="updateEstimate('MacBook / Laptop', '₦65,000', '60 min', 'Liquid Damage & Thermal Servicing')">
+                <i data-lucide="laptop" style="font-size: 28px; color: var(--secondary);"></i>
+                <div class="calc-option-title">Laptop / Mac</div>
+                <div style="font-size: 12px; color: var(--text-muted);">MacBook Air/Pro, Dell, HP</div>
+            </div>
+            <div class="calc-option" onclick="updateEstimate('Custom Desktop PC', '₦50,000', '90 min', 'Hardware Upgrade & Cooling Tuning')">
+                <i data-lucide="cpu" style="font-size: 28px; color: var(--accent);"></i>
+                <div class="calc-option-title">Gaming PC</div>
+                <div style="font-size: 12px; color: var(--text-muted);">Custom Rig, GPU, Liquid Cooling</div>
+            </div>
+            <div class="calc-option" onclick="updateEstimate('Gaming Console', '₦48,000', '60 min', 'HDMI Port & Power Supply Repair')">
+                <i data-lucide="gamepad-2" style="font-size: 28px; color: var(--amber);"></i>
+                <div class="calc-option-title">Console</div>
+                <div style="font-size: 12px; color: var(--text-muted);">PS5, Xbox Series X, Switch</div>
+            </div>
+        </div>
+
+        <div id="estimateResult" style="background: var(--bg-dark); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+            <div>
+                <span class="chip chip-active" id="estDevice">iPhone / Smartphone</span>
+                <h3 id="estService" style="margin: 8px 0 4px 0;">OLED Screen & Battery Replacement</h3>
+                <p style="font-size: 13px; color: var(--text-muted);">Includes free 30-point hardware diagnostic test and 90-day warranty.</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 24px;">
+                <div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Estimated Price</div>
+                    <div style="font-size: 28px; font-weight: 800; color: var(--emerald);" id="estPrice">₦45,000</div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Turnaround</div>
+                    <div style="font-size: 18px; font-weight: 700; color: #fff;" id="estTime">45 min</div>
+                </div>
+                <a href="{% url 'book_appointment' %}" class="btn btn-primary">
+                    Book This Estimate
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Electronics Showcase Catalog -->
+<section class="section">
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">DC Gadgets Store Showcase</h2>
+            <p class="section-subtitle">Certified pre-owned and new electronics tested by our technicians.</p>
+        </div>
+        <a href="{% url 'store_catalog' %}" class="btn btn-outline">
+            Explore All Products <i data-lucide="arrow-right"></i>
+        </a>
+    </div>
+
+    <div class="grid">
+        {% for gadget in gadgets %}
+        <div class="card gadget-card">
+            <div class="gadget-img-wrapper">
+                <img src="{{ gadget.image_url }}" alt="{{ gadget.name }}" class="gadget-img" onerror="this.src='https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&auto=format&fit=crop&q=80'">
+                {% if gadget.badge %}
+                <span class="card-badge badge-popular">{{ gadget.badge }}</span>
+                {% endif %}
+            </div>
+            <div class="gadget-body">
+                <div class="gadget-brand">{{ gadget.brand }}</div>
+                <h4 class="card-title" style="font-size: 16px; margin: 4px 0;">{{ gadget.name }}</h4>
+                <div class="stars">★★★★★ {{ gadget.rating }}</div>
+                <p class="gadget-specs">{{ gadget.specs }}</p>
+                
+                <div class="card-meta" style="margin-top: auto;">
+                    <div>
+                        <div class="card-price">₦{{ gadget.price|floatformat:0|intcomma }}</div>
+                        {% if gadget.original_price %}
+                        <span style="font-size: 12px; color: var(--text-muted); text-decoration: line-through;">₦{{ gadget.original_price|floatformat:0|intcomma }}</span>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'book_appointment' %}" class="btn btn-secondary btn-sm">
+                        Inquire / Reserve
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p style="color: var(--text-muted);">No products currently available.</p>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Customer Reviews Section -->
+<section class="section">
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">What Our Customers Say</h2>
+            <p class="section-subtitle">Real feedback from verified store and service clients.</p>
+        </div>
+    </div>
+
+    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+        {% for review in reviews %}
+        <div class="review-card">
+            <div class="stars">
+                {% for i in "12345" %}
+                    {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}
+                {% endfor %}
+            </div>
+            <p style="font-size: 15px; color: var(--text-primary); font-style: italic; margin-bottom: 16px;">
+                "{{ review.comment }}"
+            </p>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="brand-icon" style="width: 36px; height: 36px; font-size: 14px;"><i data-lucide="user"></i></div>
+                <div>
+                    <div style="font-weight: 700; font-size: 14px;">{{ review.user.first_name|default:review.user.username }}</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Verified Customer</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Contact Form Section -->
+<section class="section">
+    <div class="calculator-box" style="background: var(--bg-surface);">
+        <div class="hero" style="padding: 0;">
+            <div>
+                <h2 class="section-title">Have Questions? Reach Out</h2>
+                <p class="section-subtitle" style="margin-bottom: 24px;">
+                    Need a custom repair quote or looking for a specific component? Drop us a line and our tech team will reply within 2 hours.
+                </p>
+
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div class="brand-icon" style="width: 40px; height: 40px;"><i data-lucide="map-pin"></i></div>
+                        <div>
+                            <div style="font-weight: 700;">Visit DC Gadgets</div>
+                            <div style="font-size: 13px; color: var(--text-muted);">Computer Village, Ikeja, Lagos</div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div class="brand-icon" style="width: 40px; height: 40px;"><i data-lucide="message-circle"></i></div>
+                        <div>
+                            <div style="font-weight: 700;">WhatsApp / Call</div>
+                            <div style="font-size: 13px; color: var(--text-muted);">+234 706 450 1907</div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div class="brand-icon" style="width: 40px; height: 40px;"><i data-lucide="clock"></i></div>
+                        <div>
+                            <div style="font-weight: 700;">Opening Hours</div>
+                            <div style="font-size: 13px; color: var(--text-muted);">Mon-Sat 9AM-7PM | Sun Closed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <form action="{% url 'submit_contact' %}" method="post" style="display: flex; flex-direction: column; gap: 14px;">
+                    {% csrf_token %}
+                    <div>
+                        <label class="form-label">Full Name</label>
+                        {{ contact_form.name }}
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div>
+                            <label class="form-label">Email</label>
+                            {{ contact_form.email }}
+                        </div>
+                        <div>
+                            <label class="form-label">Phone</label>
+                            {{ contact_form.phone }}
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label">Subject</label>
+                        {{ contact_form.subject }}
+                    </div>
+                    <div>
+                        <label class="form-label">Message</label>
+                        {{ contact_form.message }}
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i data-lucide="send"></i> Send Message
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function updateEstimate(device, price, time, service) {
+        document.querySelectorAll('.calc-option').forEach(el => el.classList.remove('selected'));
+        event.currentTarget.classList.add('selected');
+
+        document.getElementById('estDevice').innerText = device;
+        document.getElementById('estPrice').innerText = price;
+        document.getElementById('estTime').innerText = time;
+        document.getElementById('estService').innerText = service;
+    }
+</script>
+{% endblock %}

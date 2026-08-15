@@ -1,0 +1,153 @@
+{% extends "scheduler/base.html" %}
+{% load humanize %}
+
+{% block title %}Admin Management Suite &middot; DC Gadgets{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <div>
+        <h1 class="section-title">DC Gadgets Operations Center</h1>
+        <p class="section-subtitle">Manage customer repair orders, update status timelines, and review store inquiries.</p>
+    </div>
+    <span class="chip chip-active"><i data-lucide="shield"></i> Administrator Mode</span>
+</div>
+
+<!-- Metrics Cards Grid -->
+<div class="metrics-grid">
+    <div class="metric-card">
+        <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Total Bookings</div>
+        <div class="metric-val">{{ metrics.total }}</div>
+    </div>
+    <div class="metric-card" style="border-color: rgba(245, 158, 11, 0.3);">
+        <div style="font-size: 12px; color: var(--amber); text-transform: uppercase;">Pending Approval</div>
+        <div class="metric-val" style="color: #fbbf24;">{{ metrics.pending }}</div>
+    </div>
+    <div class="metric-card" style="border-color: rgba(139, 92, 246, 0.3);">
+        <div style="font-size: 12px; color: var(--accent); text-transform: uppercase;">In Repair</div>
+        <div class="metric-val" style="color: #c084fc;">{{ metrics.in_progress }}</div>
+    </div>
+    <div class="metric-card" style="border-color: rgba(6, 182, 212, 0.3);">
+        <div style="font-size: 12px; color: var(--secondary); text-transform: uppercase;">Ready for Pickup</div>
+        <div class="metric-val" style="color: #38bdf8;">{{ metrics.ready }}</div>
+    </div>
+    <div class="metric-card" style="border-color: rgba(16, 185, 129, 0.3);">
+        <div style="font-size: 12px; color: var(--emerald); text-transform: uppercase;">Completed</div>
+        <div class="metric-val" style="color: #34d399;">{{ metrics.completed }}</div>
+    </div>
+    <div class="metric-card" style="background: rgba(59, 130, 246, 0.08); border-color: var(--primary-glow);">
+        <div style="font-size: 12px; color: var(--secondary); text-transform: uppercase;">Est. Active Revenue</div>
+        <div class="metric-val" style="color: var(--emerald);">₦{{ metrics.revenue|floatformat:0|intcomma }}</div>
+    </div>
+</div>
+
+<!-- Search & Status Filter Bar -->
+<div class="calculator-box" style="padding: 20px; margin-bottom: 32px;">
+    <form method="get" style="display: flex; gap: 14px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 260px;">
+            <input type="text" name="q" value="{{ search_query|default:'' }}" class="input-field" placeholder="Search by tracking code (DC-XXX), customer, or device...">
+        </div>
+        <div style="width: 200px;">
+            <select name="status" class="input-field" onchange="this.form.submit()">
+                <option value="">All Statuses</option>
+                {% for code, label in statuses %}
+                <option value="{{ code }}" {% if status_filter == code %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-secondary">Filter</button>
+        {% if status_filter or search_query %}
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline">Reset</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Appointments Management Table -->
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Code &amp; Customer</th>
+                <th>Service &amp; Device</th>
+                <th>Schedule</th>
+                <th>Current Status</th>
+                <th>Quick Status Update &amp; Tech Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in appointments %}
+            <tr>
+                <td>
+                    <div style="font-weight: 800; color: #fff;">
+                        <span class="chip chip-active" style="padding: 2px 8px; font-size: 11px;">{{ a.tracking_code }}</span>
+                    </div>
+                    <div style="font-weight: 700; font-size: 14px; margin-top: 4px;">{{ a.customer.user.get_full_name|default:a.customer.user.username }}</div>
+                    <div style="font-size: 12px; color: var(--text-muted);"><i data-lucide="phone" style="width: 12px; display: inline;"></i> {{ a.customer.phone_number }}</div>
+                </td>
+                <td>
+                    <div style="font-weight: 700; color: #fff;">{{ a.service.name }}</div>
+                    <div style="font-size: 13px; color: var(--secondary);"><i data-lucide="smartphone" style="width: 12px; display: inline;"></i> {{ a.device_model }}</div>
+                    {% if a.issue_description %}
+                    <div style="font-size: 12px; color: var(--text-muted); font-style: italic; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        "{{ a.issue_description }}"
+                    </div>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="font-weight: 700;">{{ a.appointment_date }}</div>
+                    <div style="font-size: 13px; color: var(--text-muted);">{{ a.appointment_time }}</div>
+                </td>
+                <td>
+                    <span class="status status-{{ a.status|lower }}">
+                        {{ a.get_status_display }}
+                    </span>
+                    {% if a.admin_notes %}
+                    <div style="font-size: 11px; color: var(--secondary); margin-top: 4px;">Note: {{ a.admin_notes }}</div>
+                    {% endif %}
+                </td>
+                <td>
+                    <form action="{% url 'update_status' a.pk %}" method="post" style="display: flex; flex-direction: column; gap: 8px; max-width: 260px;">
+                        {% csrf_token %}
+                        <div style="display: flex; gap: 6px;">
+                            <select name="status" class="input-field" style="padding: 6px 10px; font-size: 12px;">
+                                {% for code, label in statuses %}
+                                <option value="{{ code }}" {% if a.status == code %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                        </div>
+                        <input type="text" name="admin_notes" value="{{ a.admin_notes }}" class="input-field" placeholder="Add tech note..." style="padding: 4px 8px; font-size: 11px;">
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center; padding: 36px; color: var(--text-muted);">
+                    No appointments match the selected filter.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Customer Contact Messages Section -->
+{% if unread_messages %}
+<div class="calculator-box" style="margin-top: 40px; background: var(--bg-surface);">
+    <h3 class="section-title" style="font-size: 20px; margin-bottom: 16px;">
+        <i data-lucide="mail" style="color: var(--amber);"></i> Incoming Customer Inquiries ({{ unread_messages.count }})
+    </h3>
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+        {% for msg in unread_messages %}
+        <div style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-weight: 700; color: #fff;">{{ msg.name }} ({{ msg.email }})</span>
+                <span style="font-size: 12px; color: var(--text-muted);">{{ msg.created_at }}</span>
+            </div>
+            <div style="font-weight: 600; color: var(--secondary); font-size: 14px;">Subject: {{ msg.subject }}</div>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">{{ msg.message }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "scheduler/base.html" %}
+
+{% block title %}Account Settings &middot; DC Gadgets{% endblock %}
+
+{% block content %}
+<div style="max-width: 650px; margin: 0 auto;">
+    <div style="margin-bottom: 28px;">
+        <h1 class="section-title">Customer Profile Settings</h1>
+        <p class="section-subtitle">Manage your personal information, contact phone, and primary device preferences.</p>
+    </div>
+
+    <div class="calculator-box" style="background: var(--bg-surface);">
+        <form method="post">
+            {% csrf_token %}
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;" class="form-group">
+                <div>
+                    <label class="form-label">First Name</label>
+                    {{ form.first_name }}
+                </div>
+                <div>
+                    <label class="form-label">Last Name</label>
+                    {{ form.last_name }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                {{ form.email }}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                {{ form.phone_number }}
+                <div class="form-help">Used for automated SMS repair status notifications</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Street Address &amp; City</label>
+                {{ form.address }}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Primary Device / Gear Model</label>
+                {{ form.preferred_device }}
+                <div class="form-help">e.g. iPhone 15 Pro Max, MacBook Air M2</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 10px;">
+                <i data-lucide="save"></i> Save Profile Changes
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

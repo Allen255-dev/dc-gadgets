@@ -1,0 +1,16 @@
+{% extends "scheduler/base.html" %}
+{% block title %}Access Restricted &middot; DC Gadgets{% endblock %}
+{% block content %}
+<section class="section" style="text-align: center; padding: 80px 0;">
+    <div class="brand-icon" style="width: 64px; height: 64px; font-size: 28px; margin: 0 auto 20px auto;">
+        <i data-lucide="lock"></i>
+    </div>
+    <h2 class="section-title">This area is staff-only</h2>
+    <p class="section-subtitle" style="max-width: 480px; margin: 12px auto 28px auto;">
+        You're signed in as a customer account, so the admin dashboard isn't available to you.
+        If you work at DC Gadgets and think this is a mistake, ask an existing staff member to
+        grant your account staff access.
+    </p>
+    <a href="{% url 'home' %}" class="btn btn-primary">Back to DC Gadgets</a>
+</section>
+{% endblock %}

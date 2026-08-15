@@ -1,0 +1,111 @@
+{% extends "scheduler/base.html" %}
+
+{% block title %}Live Repair Status Tracker &middot; DC Gadgets{% endblock %}
+
+{% block content %}
+<div style="max-width: 850px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 32px;">
+        <div class="chip chip-active" style="margin-bottom: 12px;"><i data-lucide="search"></i> Live Repair Lookup</div>
+        <h1 class="section-title">Track Your Repair Status</h1>
+        <p class="section-subtitle">Enter your 12-character DC tracking code (e.g. DC-8F92A) or registered phone number.</p>
+    </div>
+
+    <!-- Search Form -->
+    <div class="calculator-box" style="padding: 24px; margin-bottom: 40px;">
+        <form method="get" style="display: flex; gap: 14px;">
+            <input type="text" name="code" value="{{ code }}" class="input-field" placeholder="Enter Tracking Code (DC-XXXXXX) or Phone Number..." style="font-size: 16px; padding: 14px;" required>
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i data-lucide="search"></i> Search
+            </button>
+        </form>
+    </div>
+
+    {% if searched %}
+        {% if appointment %}
+        <!-- Status Stepper Card -->
+        <div class="calculator-box" style="background: var(--bg-surface);">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
+                <div>
+                    <span class="chip chip-active"><i data-lucide="hash"></i> {{ appointment.tracking_code }}</span>
+                    <h2 style="font-size: 22px; font-weight: 800; margin-top: 6px;">{{ appointment.device_model }}</h2>
+                </div>
+                <span class="status status-{{ appointment.status|lower }}" style="font-size: 14px; padding: 8px 16px;">
+                    <i data-lucide="activity"></i> {{ appointment.get_status_display }}
+                </span>
+            </div>
+
+            <!-- Visual Progress Timeline Stepper -->
+            <div class="timeline">
+                <div class="timeline-step {% if appointment.status == 'PENDING' %}active{% elif appointment.status != 'PENDING' %}completed{% endif %}">
+                    <div class="step-icon"><i data-lucide="clock"></i></div>
+                    <div class="step-title">1. Received</div>
+                </div>
+                <div class="timeline-step {% if appointment.status == 'CONFIRMED' %}active{% elif appointment.status == 'IN_PROGRESS' or appointment.status == 'READY' or appointment.status == 'COMPLETED' %}completed{% endif %}">
+                    <div class="step-icon"><i data-lucide="calendar"></i></div>
+                    <div class="step-title">2. Scheduled</div>
+                </div>
+                <div class="timeline-step {% if appointment.status == 'IN_PROGRESS' %}active{% elif appointment.status == 'READY' or appointment.status == 'COMPLETED' %}completed{% endif %}">
+                    <div class="step-icon"><i data-lucide="wrench"></i></div>
+                    <div class="step-title">3. In Repair</div>
+                </div>
+                <div class="timeline-step {% if appointment.status == 'READY' %}active{% elif appointment.status == 'COMPLETED' %}completed{% endif %}">
+                    <div class="step-icon"><i data-lucide="package-check"></i></div>
+                    <div class="step-title">4. Ready</div>
+                </div>
+                <div class="timeline-step {% if appointment.status == 'COMPLETED' %}completed{% endif %}">
+                    <div class="step-icon"><i data-lucide="check-circle-2"></i></div>
+                    <div class="step-title">5. Done</div>
+                </div>
+            </div>
+
+            <!-- Details Grid -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; margin-top: 24px;">
+                <div>
+                    <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Service Package</div>
+                    <div style="font-weight: 700; font-size: 15px; color: #fff; margin-top: 2px;">{{ appointment.service.name }}</div>
+                </div>
+
+                <div>
+                    <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Customer Name</div>
+                    <div style="font-weight: 700; font-size: 15px; color: #fff; margin-top: 2px;">{{ appointment.customer.user.get_full_name|default:appointment.customer.user.username }}</div>
+                </div>
+
+                <div>
+                    <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Scheduled Bench Time</div>
+                    <div style="font-weight: 700; font-size: 15px; color: #fff; margin-top: 2px;">{{ appointment.appointment_date }} at {{ appointment.appointment_time }}</div>
+                </div>
+
+                <div>
+                    <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Warranty Coverage</div>
+                    <div style="font-weight: 700; font-size: 15px; color: var(--emerald); margin-top: 2px;">{{ appointment.service.warranty_info }}</div>
+                </div>
+
+                {% if appointment.issue_description %}
+                <div style="grid-column: 1 / -1;">
+                    <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Reported Issue / Symptoms</div>
+                    <div style="font-size: 14px; color: var(--text-secondary); margin-top: 4px;">{{ appointment.issue_description }}</div>
+                </div>
+                {% endif %}
+
+                {% if appointment.admin_notes %}
+                <div style="grid-column: 1 / -1; background: rgba(59, 130, 246, 0.1); border: 1px solid var(--primary-glow); padding: 14px; border-radius: var(--radius-sm);">
+                    <div style="font-size: 12px; font-weight: 700; color: var(--secondary); text-transform: uppercase;">Technician Notes</div>
+                    <div style="font-size: 14px; color: #fff; margin-top: 4px;">{{ appointment.admin_notes }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <!-- Not Found -->
+        <div style="text-align: center; padding: 48px; background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+            <i data-lucide="alert-triangle" style="width: 48px; height: 48px; color: var(--amber); margin-bottom: 16px;"></i>
+            <h2>No Booking Found for "{{ code }}"</h2>
+            <p style="color: var(--text-secondary); margin-top: 8px;">Please verify your tracking code format (e.g. DC-8F92A) or double-check your phone number.</p>
+            <a href="{% url 'book_appointment' %}" class="btn btn-primary" style="margin-top: 20px;">
+                Book New Appointment
+            </a>
+        </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

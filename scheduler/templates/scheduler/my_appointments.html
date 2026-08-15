@@ -1,0 +1,97 @@
+{% extends "scheduler/base.html" %}
+{% load humanize %}
+
+{% block title %}My Tech Appointments &middot; DC Gadgets{% endblock %}
+
+{% block content %}
+<div class="section-header">
+    <div>
+        <h1 class="section-title">My Bookings &amp; Repair History</h1>
+        <p class="section-subtitle">Welcome back, {{ profile.user.first_name|default:profile.user.username }}. Track active services and manage your appointments.</p>
+    </div>
+    <a href="{% url 'book_appointment' %}" class="btn btn-primary">
+        <i data-lucide="plus"></i> Book New Service
+    </a>
+</div>
+
+{% if appointments %}
+<div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));">
+    {% for a in appointments %}
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+            <span class="chip chip-active"><i data-lucide="hash"></i> {{ a.tracking_code }}</span>
+            <span class="status status-{{ a.status|lower }}">{{ a.get_status_display }}</span>
+        </div>
+
+        <h3 class="card-title" style="font-size: 18px;">{{ a.service.name }}</h3>
+        <p style="font-size: 14px; font-weight: 700; color: var(--secondary); margin-bottom: 8px;">
+            <i data-lucide="smartphone" style="width: 14px; display: inline;"></i> {{ a.device_model }}
+        </p>
+
+        <p class="card-desc" style="font-size: 13px;">
+            {{ a.issue_description|default:a.service.description }}
+        </p>
+
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); padding: 12px; border-radius: var(--radius-sm); margin-bottom: 16px;">
+            <div style="font-size: 12px; color: var(--text-muted);">Scheduled Date &amp; Time</div>
+            <div style="font-size: 14px; font-weight: 700; color: #fff;">
+                <i data-lucide="calendar" style="width: 14px; display: inline;"></i> {{ a.appointment_date }} at {{ a.appointment_time }}
+            </div>
+        </div>
+
+        <div class="card-meta">
+            <div class="card-price">₦{{ a.service.price|floatformat:0|intcomma }}</div>
+            <div style="display: flex; gap: 8px;">
+                <a href="{% url 'track_repair' %}?code={{ a.tracking_code }}" class="btn btn-secondary btn-sm">
+                    <i data-lucide="activity"></i> Track
+                </a>
+                {% if a.status == "PENDING" or a.status == "CONFIRMED" %}
+                <a href="{% url 'cancel_appointment' a.pk %}" class="btn btn-outline btn-sm" style="border-color: var(--rose); color: var(--rose);" onclick="return confirm('Are you sure you want to cancel this appointment?')">
+                    Cancel
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div style="text-align: center; padding: 60px 24px; background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+    <i data-lucide="calendar-x" style="width: 56px; height: 56px; color: var(--text-muted); margin-bottom: 16px;"></i>
+    <h2>No Appointments Found</h2>
+    <p style="color: var(--text-secondary); max-width: 450px; margin: 8px auto 24px auto;">
+        You don't have any repair or consultation appointments scheduled yet.
+    </p>
+    <a href="{% url 'book_appointment' %}" class="btn btn-primary btn-lg">
+        <i data-lucide="wrench"></i> Schedule Your First Service
+    </a>
+</div>
+{% endif %}
+
+<!-- Review Submission Section -->
+<div class="calculator-box" style="margin-top: 48px; background: var(--bg-surface);">
+    <h2 class="section-title" style="font-size: 24px; margin-bottom: 8px;">Leave a Customer Review</h2>
+    <p class="section-subtitle" style="margin-bottom: 20px;">Had a recent repair or consultation at DC Gadgets? Share your feedback with the community.</p>
+
+    <form action="{% url 'submit_review' %}" method="post" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        {% csrf_token %}
+        <div>
+            <label class="form-label">Rating</label>
+            {{ review_form.rating }}
+        </div>
+        <div>
+            <label class="form-label">Related Service (Optional)</label>
+            {{ review_form.service }}
+        </div>
+        <div style="grid-column: 1 / -1;">
+            <label class="form-label">Your Review</label>
+            {{ review_form.comment }}
+        </div>
+        <div style="grid-column: 1 / -1;">
+            <button type="submit" class="btn btn-primary">
+                <i data-lucide="star"></i> Submit Review
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,144 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DC Gadgets &middot; Premier Tech Repair & Electronics Store{% endblock %}</title>
+    <meta name="description" content="Fast, reliable tech repair, custom PC builds, and certified refurbished smartphones, laptops, and gaming consoles at DC Gadgets. Book your appointment today.">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="bg-glow"></div>
+
+    <!-- Navigation Header -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="{% url 'home' %}" class="brand">
+                <div class="brand-icon">
+                    <i data-lucide="cpu"></i>
+                </div>
+                <div class="brand-text">
+                    DC <span>Gadgets</span>
+                </div>
+            </a>
+
+            <nav class="nav-links">
+                <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a>
+                <a href="{% url 'services_catalog' %}" class="nav-link {% if request.resolver_match.url_name == 'services_catalog' %}active{% endif %}">Repair Services</a>
+                <a href="{% url 'store_catalog' %}" class="nav-link {% if request.resolver_match.url_name == 'store_catalog' %}active{% endif %}">Tech Store</a>
+                <a href="{% url 'track_repair' %}" class="nav-link {% if request.resolver_match.url_name == 'track_repair' %}active{% endif %}">Track Repair</a>
+            </nav>
+
+            <div class="nav-actions">
+                {% if user.is_authenticated %}
+                    {% if user.is_staff %}
+                        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary btn-sm">
+                            <i data-lucide="layout-dashboard"></i> Admin Portal
+                        </a>
+                    {% else %}
+                        <a href="{% url 'my_appointments' %}" class="btn btn-secondary btn-sm">
+                            <i data-lucide="calendar"></i> My Bookings
+                        </a>
+                        <a href="{% url 'customer_profile' %}" class="btn btn-secondary btn-sm">
+                            <i data-lucide="user"></i> Profile
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'logout' %}" class="btn btn-outline btn-sm">
+                        Logout ({{ user.username }})
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-secondary btn-sm">Login</a>
+                    <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Create Account</a>
+                {% endif %}
+                
+                <a href="{% url 'book_appointment' %}" class="btn btn-primary btn-sm">
+                    <i data-lucide="wrench"></i> Book Repair
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container">
+        {% if messages %}
+            <div class="alert-container">
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}error{% elif message.tags == 'info' %}info{% else %}success{% endif %}">
+                        <i data-lucide="{% if message.tags == 'error' %}alert-circle{% else %}check-circle-2{% endif %}"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="brand" style="margin-bottom: 16px;">
+                        <div class="brand-icon"><i data-lucide="cpu"></i></div>
+                        <div class="brand-text">DC <span>Gadgets</span></div>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">
+                        We Are The Modern Day Tech. We buy, sell, and swap smartphones, laptops, and accessories — plus fast, certified repairs.
+                    </p>
+                    <div class="device-badge-row">
+                        <span class="chip"><i data-lucide="shield-check"></i> 90-Day Warranty</span>
+                        <span class="chip"><i data-lucide="zap"></i> Same-Day Service</span>
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="{% url 'services_catalog' %}">Hardware Repair Services</a></li>
+                        <li><a href="{% url 'store_catalog' %}">Certified Gadgets Store</a></li>
+                        <li><a href="{% url 'track_repair' %}">Live Repair Status Tracker</a></li>
+                        <li><a href="{% url 'book_appointment' %}">Schedule an Appointment</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Store Hours</h4>
+                    <ul>
+                        <li style="color: var(--text-secondary); font-size: 14px;">Mon - Fri: 9:00 AM - 7:00 PM</li>
+                        <li style="color: var(--text-secondary); font-size: 14px;">Saturday: 10:00 AM - 6:00 PM</li>
+                        <li style="color: var(--text-secondary); font-size: 14px;">Sunday: Closed</li>
+                        <li style="color: var(--emerald); font-size: 14px; margin-top: 8px;"><strong>● Express Drop-off Open</strong></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Visit The Shop</h4>
+                    <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 12px;">
+                        <i data-lucide="map-pin" style="width: 16px; display: inline;"></i> Computer Village, Ikeja<br>
+                        Lagos, Nigeria
+                    </p>
+                    <p style="color: var(--text-secondary); font-size: 14px;">
+                        <i data-lucide="message-circle" style="width: 16px; display: inline;"></i> WhatsApp: +234 706 450 1907<br>
+                        <i data-lucide="mail" style="width: 16px; display: inline;"></i> hello@dcgadgets.ng
+                    </p>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div>&copy; {% now "Y" %} DC Gadgets Store & Repair Center. All rights reserved.</div>
+                <div>Computer Village, Ikeja &middot; WhatsApp +234 706 450 1907</div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
