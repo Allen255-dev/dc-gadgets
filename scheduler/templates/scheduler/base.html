@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}DC Gadgets &middot; Premier Tech Repair & Electronics Store{% endblock %}</title>
-    <meta name="description" content="Fast, reliable tech repair, custom PC builds, and certified refurbished smartphones, laptops, and gaming consoles at DC Gadgets. Book your appointment today.">
+    <title>{% block title %}DC Gadgets &middot; Tech Repair & Electronics, Ikeja{% endblock %}</title>
+    <meta name="description" content="DC Gadgets — buy, sell, swap and repair smartphones, laptops, gaming consoles and more. Located at Computer Village, Ikeja, Lagos.">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
@@ -51,15 +51,42 @@
                     </a>
                 {% else %}
                     <a href="{% url 'login' %}" class="btn btn-secondary btn-sm">Login</a>
-                    <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Create Account</a>
+                    <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Register</a>
                 {% endif %}
-                
-                <a href="{% url 'book_appointment' %}" class="btn btn-primary btn-sm">
-                    <i data-lucide="wrench"></i> Book Repair
-                </a>
             </div>
+
+            <!-- Hamburger (mobile only) -->
+            <button class="nav-hamburger" id="navHamburger" aria-label="Open menu">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </header>
+
+    <!-- Mobile Nav Drawer -->
+    <div class="nav-drawer" id="navDrawer">
+        <div class="nav-drawer-overlay" id="navOverlay"></div>
+        <div class="nav-drawer-panel">
+            <button class="nav-drawer-close" id="navClose">&times;</button>
+            <a href="{% url 'home' %}" class="nav-link">Home</a>
+            <a href="{% url 'services_catalog' %}" class="nav-link">Repair Services</a>
+            <a href="{% url 'store_catalog' %}" class="nav-link">Tech Store</a>
+            <a href="{% url 'track_repair' %}" class="nav-link">Track Repair</a>
+            <a href="{% url 'book_appointment' %}" class="nav-link">Book Appointment</a>
+            <div class="nav-drawer-divider"></div>
+            {% if user.is_authenticated %}
+                {% if user.is_staff %}
+                    <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary btn-sm">Admin Portal</a>
+                {% else %}
+                    <a href="{% url 'my_appointments' %}" class="btn btn-secondary btn-sm">My Bookings</a>
+                    <a href="{% url 'customer_profile' %}" class="btn btn-secondary btn-sm">Profile</a>
+                {% endif %}
+                <a href="{% url 'logout' %}" class="btn btn-outline btn-sm">Logout ({{ user.username }})</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-secondary btn-sm">Login</a>
+                <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Register</a>
+            {% endif %}
+        </div>
+    </div>
 
     <!-- Main Container -->
     <main class="container">
@@ -87,31 +114,27 @@
                         <div class="brand-text">DC <span>Gadgets</span></div>
                     </div>
                     <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">
-                        We Are The Modern Day Tech. We buy, sell, and swap smartphones, laptops, and accessories — plus fast, certified repairs.
+                        We buy, sell, and swap smartphones, laptops, and accessories. Fast repairs by experienced technicians.
                     </p>
-                    <div class="device-badge-row">
-                        <span class="chip"><i data-lucide="shield-check"></i> 90-Day Warranty</span>
-                        <span class="chip"><i data-lucide="zap"></i> Same-Day Service</span>
-                    </div>
+
                 </div>
 
                 <div class="footer-col">
                     <h4>Quick Links</h4>
                     <ul>
-                        <li><a href="{% url 'services_catalog' %}">Hardware Repair Services</a></li>
-                        <li><a href="{% url 'store_catalog' %}">Certified Gadgets Store</a></li>
-                        <li><a href="{% url 'track_repair' %}">Live Repair Status Tracker</a></li>
-                        <li><a href="{% url 'book_appointment' %}">Schedule an Appointment</a></li>
+                        <li><a href="{% url 'services_catalog' %}">Repair Services</a></li>
+                        <li><a href="{% url 'store_catalog' %}">Gadgets For Sale</a></li>
+                        <li><a href="{% url 'track_repair' %}">Track Your Repair</a></li>
+                        <li><a href="{% url 'book_appointment' %}">Book an Appointment</a></li>
                     </ul>
                 </div>
 
                 <div class="footer-col">
                     <h4>Store Hours</h4>
                     <ul>
-                        <li style="color: var(--text-secondary); font-size: 14px;">Mon - Fri: 9:00 AM - 7:00 PM</li>
-                        <li style="color: var(--text-secondary); font-size: 14px;">Saturday: 10:00 AM - 6:00 PM</li>
+                        <li style="color: var(--text-secondary); font-size: 14px;">Mon &ndash; Fri: 9:00 AM &ndash; 7:00 PM</li>
+                        <li style="color: var(--text-secondary); font-size: 14px;">Saturday: 10:00 AM &ndash; 6:00 PM</li>
                         <li style="color: var(--text-secondary); font-size: 14px;">Sunday: Closed</li>
-                        <li style="color: var(--emerald); font-size: 14px; margin-top: 8px;"><strong>● Express Drop-off Open</strong></li>
                     </ul>
                 </div>
 
@@ -136,8 +159,17 @@
     </footer>
 
     <script>
-        // Initialize Lucide Icons
         lucide.createIcons();
+        // Mobile nav drawer
+        const hamburger = document.getElementById('navHamburger');
+        const drawer    = document.getElementById('navDrawer');
+        const overlay   = document.getElementById('navOverlay');
+        const close     = document.getElementById('navClose');
+        function openDrawer()  { drawer.classList.add('open'); document.body.style.overflow = 'hidden'; }
+        function closeDrawer() { drawer.classList.remove('open'); document.body.style.overflow = ''; }
+        hamburger.addEventListener('click', openDrawer);
+        overlay.addEventListener('click', closeDrawer);
+        close.addEventListener('click', closeDrawer);
     </script>
     {% block extra_js %}{% endblock %}
 </body>
